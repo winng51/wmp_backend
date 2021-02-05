@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from .models import Label, Topic
+from .models import Label, Topic, Picture
 
 # Create your views here.
 
@@ -15,8 +15,9 @@ def get_labels(request):
         label_list = list(Label.objects.values('id', 'title'))
         for label in label_list:
             topic_list = []
-            for i in list(Topic.objects.filter(labels__has_key=[label['title']]).values('id')):
-                topic_list.append(i['id'])
+            topics = list(Topic.objects.filter(labels__in=[label['id']]).values('id'))
+            for key in topics:
+                topic_list.append(key['id'])
             label['topic_list'] = topic_list
         labels.extend(label_list)
         response = json.dumps(labels, cls=DjangoJSONEncoder)
@@ -37,11 +38,12 @@ def get_topics(request):
         print("list:", topic_id_list)
         topics = list(Topic.objects.filter(id__in=topic_id_list)
                       .values('id', 'title', 'user_name', 'user_id', 'content',
-                              'create_time', 'labels', 'comment_count', 'star_count', 'view_count'))
+                              'create_time', 'comment_count', 'star_count', 'view_count'))
         for topic in topics:
-            image_list = list(list(Topic.objects.filter(id=topic['id'])
-                                   .values('image_1', 'image_2', 'image_3', 'image_4', 'image_5', 'image_6',
-                                           'image_7', 'image_8', 'image_9'))[0].values())
+            image_list = []
+            image_dict_list = list(Picture.objects.filter(topic=topic['id']).values('image'))
+            for image_dict in image_dict_list:
+                image_list.append(image_dict['image'])
             topic['user_avatar'] = 'https://wmp.winng51.cn/static/' + str(Topic.objects.get(id=topic['id']).avatar)
             topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
             print(topic)
