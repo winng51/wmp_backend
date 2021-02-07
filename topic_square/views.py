@@ -21,7 +21,15 @@ def get_labels(request):
             label['topic_list'] = topic_list
         labels.extend(label_list)
         response = json.dumps(labels, cls=DjangoJSONEncoder)
-        print(response)
+        return HttpResponse(response, content_type="application/json")
+
+
+def get_homework_list(request):
+    if request.method == 'GET':
+        topic_list = []
+        for i in list(Topic.objects.filter(is_homework=True).values('id')):
+            topic_list.append(i['id'])
+        response = json.dumps(topic_list, cls=DjangoJSONEncoder)
         return HttpResponse(response, content_type="application/json")
 
 
@@ -37,15 +45,27 @@ def get_topics(request):
             topic_id_list = [post_list]
         print("list:", topic_id_list)
         topics = list(Topic.objects.filter(id__in=topic_id_list)
-                      .values('id', 'title', 'user_name', 'user_id', 'content',
+                      .values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
                               'create_time', 'comment_count', 'star_count', 'view_count'))
         for topic in topics:
+            # 添加标签
+            label_dict_list = list(Topic.objects.filter(id=topic['id']).values('labels', 'labels__title'))
+            topic['labels'] = label_dict_list
+            # 添加照片
             image_list = []
             image_dict_list = list(Picture.objects.filter(topic=topic['id']).values('image'))
             for image_dict in image_dict_list:
                 image_list.append(image_dict['image'])
             topic['user_avatar'] = 'https://wmp.winng51.cn/static/' + str(Topic.objects.get(id=topic['id']).avatar)
             topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
-            print(topic)
+        response = json.dumps(topics, cls=DjangoJSONEncoder)
+        return HttpResponse(response, content_type="application/json")
+
+
+def get_topic(request):
+    if request.method == 'POST':
+        topic_id = request.POST['topic']
+        print("id:", topic_id)
+        topics = list(Topic.objects.filter(id=topic_id).values('stars', 'views', 'comments'))
         response = json.dumps(topics, cls=DjangoJSONEncoder)
         return HttpResponse(response, content_type="application/json")
