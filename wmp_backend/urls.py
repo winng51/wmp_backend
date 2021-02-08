@@ -20,5 +20,7 @@ from topic_square import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('topic-square/labels', views.get_labels),
+    path('topic-square/homework', views.get_homework_list),
     path('topic-square/topics', views.get_topics),
+    path('topic-square/topic', views.get_topic),
 ]
