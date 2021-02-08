@@ -22,9 +22,10 @@ class Topic(models.Model):
     create_time = models.DateField(auto_now_add=True)
     edit_time = models.DateField(auto_now=True)
     content = models.TextField(blank=True, verbose_name="正文内容")
-    star_count = models.IntegerField(default=0, verbose_name="点赞次数")
+    like_count = models.IntegerField(default=0, verbose_name="点赞次数")
     view_count = models.IntegerField(default=0, verbose_name="浏览次数")
-    stars = models.JSONField(default=dict, blank=True, verbose_name="点赞列表")
+    stars = models.JSONField(default=dict, blank=True, verbose_name="收藏列表")
+    likes = models.JSONField(default=dict, blank=True, verbose_name="点赞列表")
     views = models.JSONField(default=dict, blank=True, verbose_name="浏览列表")
     is_homework = models.BooleanField(default=False, verbose_name="是否为打卡")
 
@@ -44,6 +45,8 @@ class Comments(models.Model):
     create_time = models.DateField(auto_now_add=True)
     user_name = models.CharField(max_length=15, verbose_name="发布人昵称")
     user_id = models.CharField(max_length=15, verbose_name="发布人id")
+    like_count = models.IntegerField(default=0, verbose_name="点赞次数")
+    likes = models.JSONField(default=dict, blank=True, verbose_name="点赞列表")
 
 
 class SubComments(models.Model):
@@ -52,3 +55,5 @@ class SubComments(models.Model):
     content = models.TextField(blank=True, verbose_name="正文内容")
     user_name = models.CharField(max_length=15, verbose_name="发布人昵称")
     user_id = models.CharField(max_length=15, verbose_name="发布人id")
+    like_count = models.IntegerField(default=0, verbose_name="点赞次数")
+    likes = models.JSONField(default=dict, blank=True, verbose_name="点赞列表")

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Label, Topic, Picture, Comments
+from .models import Label, Topic, Picture, Comments, SubComments
 
 # Register your models here.
 
@@ -17,13 +17,21 @@ class PictureInline(admin.TabularInline):
     extra = 1
 
 
-class CommentInline(admin.StackedInline):
-    model = Comments
+class SubCommentInline(admin.StackedInline):
+    readonly_fields = ('like_count', 'likes',)
+    model = SubComments
     extra = 0
 
 
+class CommentInline(admin.StackedInline):
+    readonly_fields = ('like_count', 'likes',)
+    model = Comments
+    extra = 0
+    inlines = [SubCommentInline]
+
+
 class TopicAdmin(admin.ModelAdmin):
-    readonly_fields = ('star_count', 'stars', 'view_count', 'views',)
+    readonly_fields = ('like_count', 'likes', 'view_count', 'views', 'stars')
     list_display = ['id', 'title', 'user_name', 'create_time']
     list_filter = ('is_homework', 'labels')
     filter_horizontal = ('labels',)
@@ -32,8 +40,8 @@ class TopicAdmin(admin.ModelAdmin):
             'fields': ('labels', 'title', 'user_name', 'user_id', 'avatar',
                        'content', 'is_homework')}],
         ['互动内容', {
-            'fields': (('star_count', 'stars'),
-                       ('view_count', 'views'))}]
+            'fields': (('like_count', 'likes'),
+                       ('view_count', 'views'), 'stars')}]
     )
     inlines = [PictureInline, CommentInline]
 

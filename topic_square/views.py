@@ -1,7 +1,9 @@
 from django.http import HttpResponse
 import json
+from django.db.models import Count
 from django.core.serializers.json import DjangoJSONEncoder
-from .models import Label, Topic, Picture
+from .models import Label, Topic, Picture, Comments, SubComments
+
 
 # Create your views here.
 
@@ -36,6 +38,7 @@ def get_homework_list(request):
 def get_topics(request):
     if request.method == 'POST':
         post_list = request.POST['topics']
+        mode = request.POST['mode']
         if post_list == "":
             print("get_topics error: request got empty list")
             return HttpResponse("", content_type="application/json")
@@ -44,9 +47,18 @@ def get_topics(request):
         else:
             topic_id_list = [post_list]
         print("list:", topic_id_list)
-        topics = list(Topic.objects.filter(id__in=topic_id_list)
-                      .values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
-                              'create_time', 'comment_count', 'star_count', 'view_count'))
+        if mode == 'time':
+            topics = list(Topic.objects.filter(id__in=topic_id_list).order_by('-create_time')
+                          .values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
+                                  'create_time', 'like_count', 'view_count'))
+        elif mode == 'hot':
+            topics = list(Topic.objects.filter(id__in=topic_id_list).order_by('create_time')
+                          .values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
+                                  'create_time', 'like_count', 'view_count'))
+        else:
+            topics = list(Topic.objects.filter(id__in=topic_id_list)
+                          .values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
+                                  'create_time', 'like_count', 'view_count'))
         for topic in topics:
             # 添加标签
             label_dict_list = list(Topic.objects.filter(id=topic['id']).values('labels', 'labels__title'))
@@ -58,6 +70,12 @@ def get_topics(request):
                 image_list.append(image_dict['image'])
             topic['user_avatar'] = 'https://wmp.winng51.cn/static/' + str(Topic.objects.get(id=topic['id']).avatar)
             topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
+            # 添加评论
+            comment_list = Comments.objects.filter(topic=topic['id']).order_by('-like_count') \
+                .values('content', 'like_count', 'user_name', 'user_id')
+            comment_count = comment_list.count()
+            topic['comments'] = list(comment_list)[:2]
+            topic['comment_count'] = comment_count
         response = json.dumps(topics, cls=DjangoJSONEncoder)
         return HttpResponse(response, content_type="application/json")
 
@@ -66,6 +84,24 @@ def get_topic(request):
     if request.method == 'POST':
         topic_id = request.POST['topic']
         print("id:", topic_id)
-        topics = list(Topic.objects.filter(id=topic_id).values('stars', 'views', 'comments'))
-        response = json.dumps(topics, cls=DjangoJSONEncoder)
+        topic = list(Topic.objects.filter(id=topic_id).
+                     values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
+                            'create_time', 'like_count', 'view_count', 'stars'))[0]
+        # 添加标签及头像
+        label_dict_list = list(Topic.objects.filter(id=topic['id']).values('labels', 'labels__title'))
+        topic['labels'] = label_dict_list
+        topic['user_avatar'] = 'https://wmp.winng51.cn/static/' + str(Topic.objects.get(id=topic['id']).avatar)
+        # 添加照片
+        image_list = []
+        image_dict_list = list(Picture.objects.filter(topic=topic['id']).values('image'))
+        for image_dict in image_dict_list:
+            image_list.append(image_dict['image'])
+        topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
+        # 添加评论
+        comment_list = Comments.objects.filter(topic=topic['id']).order_by('-like_count') \
+            .values('content', 'like_count', 'user_name', 'user_id', 'id', 'create_time')
+        comment_count = comment_list.count()
+        topic['comments'] = list(comment_list)
+        topic['comment_count'] = comment_count
+        response = json.dumps(topic, cls=DjangoJSONEncoder)
         return HttpResponse(response, content_type="application/json")
