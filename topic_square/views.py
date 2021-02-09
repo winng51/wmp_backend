@@ -86,7 +86,7 @@ def get_topic(request):
         print("id:", topic_id)
         topic = list(Topic.objects.filter(id=topic_id).
                      values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
-                            'create_time', 'like_count', 'view_count', 'stars'))[0]
+                            'create_time', 'like_count', 'star_count', 'view_count', 'stars'))[0]
         # 添加标签及头像
         label_dict_list = list(Topic.objects.filter(id=topic['id']).values('labels', 'labels__title'))
         topic['labels'] = label_dict_list
