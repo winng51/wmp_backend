@@ -2,7 +2,7 @@ from django.http import HttpResponse
 import json
 from django.db.models import Count
 from django.core.serializers.json import DjangoJSONEncoder
-from .models import Label, Topic, Picture, Comments, SubComments
+from .models import Label, Topic, Picture, Comments, SubComments, User
 
 
 # Create your views here.
@@ -49,15 +49,15 @@ def get_topics(request):
         print("list:", topic_id_list)
         if mode == 'time':
             topics = list(Topic.objects.filter(id__in=topic_id_list).order_by('-create_time')
-                          .values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
+                          .values('id', 'title', 'user__nickname', 'user__id', 'content', 'edit_time',
                                   'create_time', 'like_count', 'view_count'))
         elif mode == 'hot':
-            topics = list(Topic.objects.filter(id__in=topic_id_list).order_by('create_time')
-                          .values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
+            topics = list(Topic.objects.filter(id__in=topic_id_list).order_by('edit_time')
+                          .values('id', 'title', 'user__nickname', 'user__id', 'content', 'edit_time',
                                   'create_time', 'like_count', 'view_count'))
         else:
             topics = list(Topic.objects.filter(id__in=topic_id_list)
-                          .values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
+                          .values('id', 'title', 'user__nickname', 'user__id', 'content', 'edit_time',
                                   'create_time', 'like_count', 'view_count'))
         for topic in topics:
             # 添加标签
@@ -68,7 +68,7 @@ def get_topics(request):
             image_dict_list = list(Picture.objects.filter(topic=topic['id']).values('image'))
             for image_dict in image_dict_list:
                 image_list.append(image_dict['image'])
-            topic['user_avatar'] = 'https://wmp.winng51.cn/static/' + str(Topic.objects.get(id=topic['id']).avatar)
+            topic['user_avatar'] = 'https://wmp.winng51.cn/static/' + str(User.objects.get(id=topic['user__id']).avatar)
             topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
             # 添加评论
             comment_list = Comments.objects.filter(topic=topic['id']).order_by('-like_count') \
@@ -85,12 +85,12 @@ def get_topic(request):
         topic_id = request.POST['topic']
         print("id:", topic_id)
         topic = list(Topic.objects.filter(id=topic_id).
-                     values('id', 'title', 'user_name', 'user_id', 'content', 'edit_time',
+                     values('id', 'title', 'user__nickname', 'user__id', 'content', 'edit_time',
                             'create_time', 'like_count', 'star_count', 'view_count', 'stars'))[0]
         # 添加标签及头像
         label_dict_list = list(Topic.objects.filter(id=topic['id']).values('labels', 'labels__title'))
         topic['labels'] = label_dict_list
-        topic['user_avatar'] = 'https://wmp.winng51.cn/static/' + str(Topic.objects.get(id=topic['id']).avatar)
+        topic['user_avatar'] = 'https://wmp.winng51.cn/static/' + str(User.objects.get(id=topic['user__id']).avatar)
         # 添加照片
         image_list = []
         image_dict_list = list(Picture.objects.filter(topic=topic['id']).values('image'))
