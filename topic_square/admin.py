@@ -28,11 +28,17 @@ class SubCommentInline(admin.StackedInline):
     extra = 0
 
 
+class CommentAdmin(admin.ModelAdmin):
+    readonly_fields = ('like_count', 'likes',)
+    list_display = ['id', '__str__', 'content']
+    list_filter = ('topic', 'user')
+    inlines = [SubCommentInline]
+
+
 class CommentInline(admin.StackedInline):
     readonly_fields = ('like_count', 'likes',)
     model = Comments
     extra = 0
-    inlines = [SubCommentInline]
 
 
 class TopicAdmin(admin.ModelAdmin):
@@ -51,6 +57,7 @@ class TopicAdmin(admin.ModelAdmin):
     inlines = [PictureInline, CommentInline]
 
 
+admin.site.register(User, UserAdmin)
 admin.site.register(Label, LabelAdmin)
 admin.site.register(Topic, TopicAdmin)
-admin.site.register(User, UserAdmin)
+admin.site.register(Comments, CommentAdmin)
