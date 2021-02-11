@@ -1,10 +1,9 @@
 from django.contrib import admin
-from .models import Label, Topic, Picture, Comments, SubComments, User
+from .models import Label, Topic, Picture, Comment, SubComment, User
 
 # Register your models here.
 
 from datetime import date
-from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
 
@@ -24,7 +23,7 @@ class UserAdmin(admin.ModelAdmin):
 
 class SubCommentInline(admin.StackedInline):
     readonly_fields = ('like_count', 'likes',)
-    model = SubComments
+    model = SubComment
     extra = 0
 
 
@@ -37,7 +36,7 @@ class CommentAdmin(admin.ModelAdmin):
 
 class CommentInline(admin.StackedInline):
     readonly_fields = ('like_count', 'likes',)
-    model = Comments
+    model = Comment
     extra = 0
 
 
@@ -60,4 +59,4 @@ class TopicAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(Label, LabelAdmin)
 admin.site.register(Topic, TopicAdmin)
-admin.site.register(Comments, CommentAdmin)
+admin.site.register(Comment, CommentAdmin)

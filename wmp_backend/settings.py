@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'werkzeug_debugger_runserver',
-    'topic_square'
+    'topic_square',
+    'mini_shop'
 ]
 
 MIDDLEWARE = [

@@ -55,7 +55,7 @@ class Picture(models.Model):
     image = models.ImageField(upload_to='topic-pictures', verbose_name="图片路径")
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     content = models.TextField(blank=True, verbose_name="正文内容")
     create_time = models.DateTimeField(auto_now_add=True)
@@ -67,8 +67,8 @@ class Comments(models.Model):
         return self.topic.title
 
 
-class SubComments(models.Model):
-    topic = models.ForeignKey(Comments, on_delete=models.CASCADE)
+class SubComment(models.Model):
+    topic = models.ForeignKey(Comment, on_delete=models.CASCADE)
     create_time = models.DateTimeField(auto_now_add=True)
     content = models.TextField(blank=True, verbose_name="正文内容")
     user = models.ForeignKey(User, on_delete=models.PROTECT, default=None, blank=True, db_index=False)

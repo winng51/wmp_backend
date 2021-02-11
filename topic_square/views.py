@@ -2,7 +2,7 @@ from django.http import HttpResponse
 import json
 from django.db.models import Count
 from django.core.serializers.json import DjangoJSONEncoder
-from .models import Label, Topic, Picture, Comments, SubComments, User
+from .models import Label, Topic, Picture, Comment, SubComment, User
 
 
 # Create your views here.
@@ -13,7 +13,7 @@ def get_labels(request):
         all_topic_list = []
         for i in list(Topic.objects.order_by('-edit_time').values('id')):
             all_topic_list.append(i['id'])
-        labels = {-1: {"id": -1, "title": "全部", "topic_list": all_topic_list}}
+        labels = {0: {"id": 0, "title": "全部", "topic_list": all_topic_list}}
         label_list = list(Label.objects.values('id', 'title'))
         for label in label_list:
             topic_list = []
@@ -62,7 +62,7 @@ def get_topics(request):
             topic['user__avatar'] = 'https://wmp.winng51.cn/static/' + str(topic['user__avatar'])
             topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
             # 添加评论
-            comment_list = Comments.objects.filter(topic=topic['id']).order_by('-like_count') \
+            comment_list = Comment.objects.filter(topic=topic['id']).order_by('-like_count') \
                 .values('content', 'like_count', 'user__nickname', 'user__id', 'user__avatar')
             comment_count = comment_list.count()
             topic['comments'] = list(comment_list)[:2]
@@ -93,7 +93,7 @@ def get_topic(request):
             image_list.append(image_dict['image'])
         topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
         # 添加评论
-        comment_list = Comments.objects.filter(topic=topic['id']).order_by('-like_count') \
+        comment_list = Comment.objects.filter(topic=topic['id']).order_by('-like_count') \
             .values('content', 'like_count', 'user__nickname', 'user__id', 'user__avatar', 'id', 'create_time')
         comment_count = comment_list.count()
         topic['comments'] = list(comment_list)
