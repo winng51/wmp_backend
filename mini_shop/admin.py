@@ -14,7 +14,8 @@ class ImageInline(admin.TabularInline):
 
 
 class GoodsAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'create_time']
+    list_display = ['id', 'title', 'price', 'seal_price', 'create_time']
+    list_filter = ('out_of_stock', 'tag')
     inlines = [ImageInline, ]
 
 

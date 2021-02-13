@@ -12,7 +12,7 @@ class Tag(models.Model):
 
 
 class Good(models.Model):
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, default=None, blank=True, db_index=False,
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, default=None, null=True, blank=True, db_index=False,
                             verbose_name="商品类别")
     create_time = models.DateField(auto_now_add=True)
     edit_time = models.DateField(auto_now=True)
@@ -20,7 +20,8 @@ class Good(models.Model):
     image = models.ImageField(upload_to='good-pictures', verbose_name="商品主图")
     content = models.TextField(blank=True, verbose_name="商品描述")
     price = models.IntegerField(default=0, verbose_name="商品价格")
-    seal_price = models.IntegerField(default=0, blank=True, verbose_name="促销价格")
+    seal_price = models.IntegerField(default=None, null=True, blank=True, verbose_name="促销价格")
+    out_of_stock = models.BooleanField(default=False, verbose_name="是否缺货")
 
     def __str__(self):
         return self.title

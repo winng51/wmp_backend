@@ -15,12 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from topic_square import views
+from topic_square.views import *
+from mini_shop.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('topic-square/labels', views.get_labels),
-    path('topic-square/homework', views.get_homework_list),
-    path('topic-square/topics', views.get_topics),
-    path('topic-square/topic', views.get_topic),
+    path('topic-square/labels', get_labels),
+    path('topic-square/homework', get_homework_list),
+    path('topic-square/topics', get_topics),
+    path('topic-square/topic', get_topic),
+    path('mini-shop/goods', get_goods),
 ]
