@@ -10,15 +10,24 @@ class User(models.Model):
         ('ME', '微电'),
         ('OT', '其它'),
     ]
-    nickname = models.CharField(max_length=15, verbose_name="用户昵称")
-    wechat_id = models.CharField(max_length=30, verbose_name="微信id")
+    USER_GENDER_CHOICES = (
+        (0, '未知'),
+        (1, '男'),
+        (0, '女'),
+    )
+    username = models.CharField(max_length=15, verbose_name="用户昵称")
+    openid = models.CharField(max_length=30, verbose_name="微信openid")
+    gender = models.SmallIntegerField(choices=USER_GENDER_CHOICES, default=0, verbose_name="性别")
+    name = models.CharField(default="无", null=True, max_length=15, verbose_name="姓名")
     avatar = models.ImageField(default=None, upload_to='avatar', verbose_name="用户头像")
-    grade = models.CharField(max_length=10, default=2019, verbose_name="年级")
-    college = models.CharField(max_length=10, default='SW', choices=COLLEGE_CHOICES, verbose_name="学院")
-    classes = models.CharField(max_length=10, default='01', verbose_name="班级")
+    college = models.CharField(max_length=10, null=True, default=None, choices=COLLEGE_CHOICES, verbose_name="学院")
+    grade = models.CharField(max_length=10, null=True, default=None, verbose_name="年级")
+    classes = models.CharField(max_length=10, null=True, default=None, verbose_name="班级")
+    is_member = models.BooleanField(default=False, verbose_name="是否为组员")
+    is_manager = models.BooleanField(default=False, verbose_name="是否为管理员")
 
     def __str__(self):
-        return self.nickname
+        return self.username
 
 
 class Label(models.Model):

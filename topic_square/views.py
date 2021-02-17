@@ -1,11 +1,69 @@
+import urllib
+import requests
 from django.http import HttpResponse
 import json
 from django.db.models import Count
 from django.core.serializers.json import DjangoJSONEncoder
 from .models import Label, Topic, Picture, Comment, SubComment, User
+from wmp_backend.settings import APP_ID, APP_KEY, MEDIA_ROOT
+from rest_framework_jwt.settings import api_settings
+
+from django.core.files import File
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
-# Create your views here.
+def get_image(src, name):
+    image = urllib.request.urlretrieve(src)
+    img_temp = SimpleUploadedFile(name + '.jpg', open(image[0], "rb").read())
+
+    return File(img_temp)
+
+
+def open_id_login(request):
+    if request.method == 'POST':
+        code = request.POST['code']
+        if not code:
+            response = json.dumps({'message': '缺少code'}, cls=DjangoJSONEncoder)
+            return HttpResponse(response, content_type="application/json", status_code=400)
+
+        url = "https://api.weixin.qq.com/sns/jscode2session?appid={0}&secret={1}&js_code={2}&grant_type=authorization_code" \
+            .format(APP_ID, APP_KEY, code)
+        wechat_response = json.loads(requests.get(url).content)  # 将json数据包转成字典
+        openid = wechat_response['openid'] if 'openid' in wechat_response else None
+        # session_key = res['session_key'] if 'session_key' in res else None
+        if not openid:
+            if 'errcode' in wechat_response:
+                print(wechat_response['errcode'])
+                response = json.dumps({'message': '微信调用失败', 'errcode': wechat_response['errcode']},
+                                      cls=DjangoJSONEncoder)
+            else:
+                response = json.dumps({'message': '微信调用失败'}, cls=DjangoJSONEncoder)
+            return HttpResponse(response, status=503)
+        print(wechat_response)
+        # 判断用户是否第一次登录
+        try:
+            user = User.objects.get(openid=openid)
+        except User.DoesNotExist:
+            # 微信用户第一次登陆,新建用户
+            username = request.POST['username']
+            gender = request.POST['gender']
+            avatar = get_image(request.POST['avatar'], username)
+            print(username, gender, avatar)
+            user = User.objects.create(username=username, gender=gender, avatar=avatar, openid=openid)
+
+        # 手动签发jwt
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
+
+        response_data = {
+            "user_id": user.id,
+            "token": token,
+        }
+
+        response = json.dumps(response_data, cls=DjangoJSONEncoder)
+        return HttpResponse(response, content_type="application/json")
 
 
 def get_labels(request):
@@ -47,7 +105,7 @@ def get_topics(request):
             topic_id_list = [post_list]
         print("list:", topic_id_list)
         topics = list(Topic.objects.filter(id__in=topic_id_list)
-                      .values('id', 'title', 'user__nickname', 'user__id', 'user__avatar', 'content', 'edit_time',
+                      .values('id', 'title', 'user__username', 'user__id', 'user__avatar', 'content', 'edit_time',
                               'create_time', 'like_count', 'view_count'))
         topics_dict = {}
         for topic in topics:
@@ -63,7 +121,7 @@ def get_topics(request):
             topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
             # 添加评论
             comment_list = Comment.objects.filter(topic=topic['id']).order_by('-like_count') \
-                .values('content', 'like_count', 'user__nickname', 'user__id', 'user__avatar')
+                .values('content', 'like_count', 'user__username', 'user__id', 'user__avatar')
             comment_count = comment_list.count()
             topic['comments'] = list(comment_list)[:2]
             for comment in topic['comments']:
@@ -80,7 +138,7 @@ def get_topic(request):
         topic_id = request.POST['topic']
         print("id:", topic_id)
         topic = list(Topic.objects.filter(id=topic_id).
-                     values('id', 'title', 'user__nickname', 'user__id', 'user__avatar', 'content', 'edit_time',
+                     values('id', 'title', 'user__username', 'user__id', 'user__avatar', 'content', 'edit_time',
                             'create_time', 'like_count', 'star_count', 'view_count', 'stars'))[0]
         # 添加标签及头像
         label_dict_list = list(Topic.objects.filter(id=topic['id']).values('labels', 'labels__title'))
@@ -94,7 +152,7 @@ def get_topic(request):
         topic['images'] = ['https://wmp.winng51.cn/static/' + i for i in image_list if i != '']
         # 添加评论
         comment_list = Comment.objects.filter(topic=topic['id']).order_by('-like_count') \
-            .values('content', 'like_count', 'user__nickname', 'user__id', 'user__avatar', 'id', 'create_time')
+            .values('content', 'like_count', 'user__username', 'user__id', 'user__avatar', 'id', 'create_time')
         comment_count = comment_list.count()
         topic['comments'] = list(comment_list)
         for comment in topic['comments']:

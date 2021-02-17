@@ -25,4 +25,5 @@ urlpatterns = [
     path('topic-square/topics', get_topics),
     path('topic-square/topic', get_topic),
     path('mini-shop/goods', get_goods),
+    path('topic-square/login', open_id_login),
 ]
