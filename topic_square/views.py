@@ -1,15 +1,17 @@
-import urllib
-import requests
-from django.http import HttpResponse
-import json
-from django.db.models import Count
-from django.core.serializers.json import DjangoJSONEncoder
-from .models import Label, Topic, Picture, Comment, SubComment, User
-from wmp_backend.settings import APP_ID, APP_KEY, MEDIA_ROOT
-from rest_framework_jwt.settings import api_settings
-
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import HttpResponse
+
+import json
+from .models import Label, Topic, Picture, Comment, SubComment, User
+from wmp_backend.settings import APP_ID, APP_KEY, MEDIA_ROOT
+
+import urllib
+import requests
+from rest_framework_jwt.settings import api_settings
+from rest_framework_jwt.utils import jwt_decode_handler
+
 
 
 def get_image(src, name):
@@ -22,6 +24,7 @@ def get_image(src, name):
 def open_id_login(request):
     if request.method == 'POST':
         code = request.POST['code']
+        print(request.POST['userName'])
         if not code:
             response = json.dumps({'message': '缺少code'}, cls=DjangoJSONEncoder)
             return HttpResponse(response, content_type="application/json", status_code=400)
@@ -39,7 +42,6 @@ def open_id_login(request):
             else:
                 response = json.dumps({'message': '微信调用失败'}, cls=DjangoJSONEncoder)
             return HttpResponse(response, status=503)
-        print(wechat_response)
         # 判断用户是否第一次登录
         try:
             user = User.objects.get(openid=openid)
@@ -58,11 +60,29 @@ def open_id_login(request):
         token = jwt_encode_handler(payload)
 
         response_data = {
-            "user_id": user.id,
+            "userId": user.id,
             "token": token,
+            "userName": user.username,
+            "gender": user.gender,
+            "avatar": 'https://wmp.winng51.cn/static/' + str(user.avatar),
         }
+        print(response_data)
 
         response = json.dumps(response_data, cls=DjangoJSONEncoder)
+        return HttpResponse(response, content_type="application/json")
+
+
+def identity(request):
+    if request.method == 'POST':
+        token = request.POST['token']
+        user_info = jwt_decode_handler(token)
+        print(user_info)
+        try:
+            user = User.objects.get(id=user_info['user_id'])
+        except User.DoesNotExist:
+            response = json.dumps({'message': '未登录'}, cls=DjangoJSONEncoder)
+            return HttpResponse(response, content_type="application/json", status_code=400)
+        response = json.dumps(user.username, cls=DjangoJSONEncoder)
         return HttpResponse(response, content_type="application/json")
 
 
