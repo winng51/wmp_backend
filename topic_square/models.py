@@ -13,7 +13,12 @@ class User(models.Model):
     USER_GENDER_CHOICES = (
         (0, '未知'),
         (1, '男'),
-        (0, '女'),
+        (2, '女'),
+    )
+    USER_AUTHORITY = (
+        (0, '路人'),
+        (1, '组员'),
+        (2, '管理员'),
     )
     username = models.CharField(max_length=15, verbose_name="用户昵称")
     openid = models.CharField(max_length=30, verbose_name="微信openid")
@@ -23,8 +28,8 @@ class User(models.Model):
     college = models.CharField(max_length=10, null=True, default=None, choices=COLLEGE_CHOICES, verbose_name="学院")
     grade = models.CharField(max_length=10, null=True, default=None, verbose_name="年级")
     classes = models.CharField(max_length=10, null=True, default=None, verbose_name="班级")
-    is_member = models.BooleanField(default=False, verbose_name="是否为组员")
-    is_manager = models.BooleanField(default=False, verbose_name="是否为管理员")
+    identity = models.BooleanField(default=False, verbose_name="是否申请身份认证")
+    authority = models.SmallIntegerField(choices=USER_AUTHORITY, default=0, verbose_name="身份")
 
     def __str__(self):
         return self.username

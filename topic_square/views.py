@@ -13,7 +13,6 @@ from rest_framework_jwt.settings import api_settings
 from rest_framework_jwt.utils import jwt_decode_handler
 
 
-
 def get_image(src, name):
     image = urllib.request.urlretrieve(src)
     img_temp = SimpleUploadedFile(name + '.jpg', open(image[0], "rb").read())
@@ -77,6 +76,7 @@ def identity(request):
         token = request.POST['token']
         user_info = jwt_decode_handler(token)
         print(user_info)
+        print(request.POST)
         try:
             user = User.objects.get(id=user_info['user_id'])
         except User.DoesNotExist:

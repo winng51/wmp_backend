@@ -19,7 +19,7 @@ class PictureInline(admin.TabularInline):
 class UserAdmin(admin.ModelAdmin):
     readonly_fields = ('openid',)
     list_display = ['id', 'name', 'college', 'grade', 'classes']
-    list_filter = ('grade', 'college', 'is_member', 'is_manager', 'gender')
+    list_filter = ('grade', 'college', 'identity', 'authority', 'gender')
 
 
 class SubCommentInline(admin.StackedInline):
