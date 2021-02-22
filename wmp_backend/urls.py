@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from topic_square.views import *
+from topic_square.identity import *
 from mini_shop.views import *
 
 urlpatterns = [
