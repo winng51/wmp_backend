@@ -5,10 +5,10 @@ from django.db import models
 
 class User(models.Model):
     COLLEGE_CHOICES = [
-        ('SW', '软件'),
-        ('IS', '软国'),
-        ('ME', '微电'),
-        ('OT', '其它'),
+        (0, '软件'),
+        (1, '软国'),
+        (2, '微电'),
+        (3, '其它'),
     ]
     USER_GENDER_CHOICES = (
         (0, '未知'),
