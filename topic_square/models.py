@@ -5,10 +5,10 @@ from django.db import models
 
 class User(models.Model):
     COLLEGE_CHOICES = [
-        ('SW', '软件'),
-        ('IS', '软国'),
-        ('ME', '微电'),
-        ('OT', '其它'),
+        (0, '软件'),
+        (1, '软国'),
+        (2, '微电'),
+        (3, '其它'),
     ]
     USER_GENDER_CHOICES = (
         (0, '未知'),
@@ -22,17 +22,29 @@ class User(models.Model):
     )
     username = models.CharField(max_length=15, verbose_name="用户昵称")
     openid = models.CharField(max_length=30, verbose_name="微信openid")
-    gender = models.SmallIntegerField(choices=USER_GENDER_CHOICES, default=0, verbose_name="性别")
-    name = models.CharField(default="无", null=True, max_length=15, verbose_name="姓名")
     avatar = models.ImageField(default=None, upload_to='avatar', verbose_name="用户头像")
-    college = models.CharField(max_length=10, null=True, default=None, choices=COLLEGE_CHOICES, verbose_name="学院")
-    grade = models.CharField(max_length=10, null=True, default=None, verbose_name="年级")
-    classes = models.CharField(max_length=10, null=True, default=None, verbose_name="班级")
     identity = models.BooleanField(default=False, verbose_name="是否申请身份认证")
     authority = models.SmallIntegerField(choices=USER_AUTHORITY, default=0, verbose_name="身份")
+    gender = models.SmallIntegerField(choices=USER_GENDER_CHOICES, default=0, verbose_name="性别")
+    college = models.SmallIntegerField(null=True, default=0, choices=COLLEGE_CHOICES, verbose_name="学院")
+    grade = models.CharField(max_length=10, null=True, default=None, blank=True, verbose_name="年级")
+    classes = models.CharField(max_length=10, null=True, default=None, blank=True, verbose_name="班级")
+    name = models.CharField(default=None, null=True, max_length=15, blank=True, verbose_name="姓名")
+    phone = models.CharField(max_length=10, null=True, default=None, blank=True, verbose_name="手机号")
 
     def __str__(self):
         return self.username
+
+    def student_info(self):
+        if len(str(self.classes)) < 2:
+            classes = '0' + str(self.classes)
+        else:
+            classes = str(self.classes)
+        return self.get_college_display() + str(self.grade)[-2:] + classes
+
+    class Meta:
+        verbose_name = "用户"
+        verbose_name_plural = "论坛用户"
 
 
 class Label(models.Model):

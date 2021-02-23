@@ -2,9 +2,7 @@ from django.contrib import admin
 from .models import Label, Topic, Picture, Comment, SubComment, User
 
 # Register your models here.
-
 from datetime import date
-from django.utils.translation import gettext_lazy as _
 
 
 class LabelAdmin(admin.ModelAdmin):
@@ -16,10 +14,30 @@ class PictureInline(admin.TabularInline):
     extra = 1
 
 
+# 添加admin动作（身份认证-成员确认）
+def authority_check(self, request, queryset):
+    queryset.update(authority=1, identity=0)
+    # 操作完成后的提示信息
+    self.message_user(request, '认证成功')
+
+
+authority_check.short_description = "身份认证 - 成员确认"
+
+
 class UserAdmin(admin.ModelAdmin):
     readonly_fields = ('openid',)
-    list_display = ['id', 'name', 'college', 'grade', 'classes']
+    list_display = ['id', 'username', 'name', 'student_info', 'authority', 'identity']
     list_filter = ('grade', 'college', 'identity', 'authority', 'gender')
+    fieldsets = (
+        ['基本信息', {
+            'fields': ('username', 'openid', 'avatar', 'gender')}],
+        ['身份验证', {
+            'fields': ('identity', 'authority')}],
+        ['学生信息', {
+            'fields': ('college', 'grade', 'classes', 'name', 'phone')}]
+    )
+    ordering = ['-identity']
+    actions = [authority_check]
 
 
 class SubCommentInline(admin.StackedInline):
@@ -42,6 +60,7 @@ class CommentInline(admin.StackedInline):
 
 
 class TopicAdmin(admin.ModelAdmin):
+    date_hierarchy = 'edit_time'
     readonly_fields = ('like_count', 'likes', 'view_count', 'views', 'stars')
     list_display = ['id', 'title', 'create_time']
     list_filter = ('is_homework', 'labels')

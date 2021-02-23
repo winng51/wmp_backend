@@ -50,7 +50,7 @@ def open_id_login(request):
             gender = request.POST['gender']
             avatar = get_image(request.POST['avatar'], username)
             print(username, gender, avatar)
-            user = User.objects.create(username=username, gender=gender, avatar=avatar, openid=openid)
+            user = User.objects.create(username=username, gender=gender, avatar=avatar, openid=openid, authority=0)
 
         # 手动签发jwt
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -73,8 +73,7 @@ def open_id_login(request):
 
 def identity(request):
     if request.method == 'POST':
-        user_upload = request.POST
-        token = user_upload.token
+        token = request.POST['token']
         user_info = jwt_decode_handler(token)
         print(user_info)
         try:
@@ -82,8 +81,25 @@ def identity(request):
         except User.DoesNotExist:
             response = json.dumps({'message': '未登录'}, cls=DjangoJSONEncoder)
             return HttpResponse(response, content_type="application/json", status_code=400)
-        user.save(username=user_upload.username, avatar=get_image(user_upload.avatar, user_upload.username),
-                  gender=user_upload.gender, name=user_upload.name, college=user_upload.college)
-        response = json.dumps(user.username, cls=DjangoJSONEncoder)
+        print(request.POST)
+        user.gender = request.POST['gender']
+        user.avatar = get_image(request.POST['avatarUrl'], request.POST['username'])
+        user.username = request.POST['username']
+        user.name = request.POST['name']
+        user.college = request.POST['college']
+        user.grade = request.POST['grade']
+        user.classes = request.POST['class']
+        user.phone = request.POST['mobile']
+        user.identity = True
+        user.save()
+
+        response_data = {
+            "userName": user.username,
+            "gender": user.gender,
+            "avatar": 'https://wmp.winng51.cn/static/' + str(user.avatar),
+        }
+        print(response_data)
+
+        response = json.dumps(response_data, cls=DjangoJSONEncoder)
         return HttpResponse(response, content_type="application/json")
 
