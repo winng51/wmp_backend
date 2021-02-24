@@ -75,14 +75,21 @@ def get_topics(request):
 def get_topic(request):
     if request.method == 'POST':
         topic_id = request.POST['topic']
-        print("id:", topic_id)
+        print("id:", topic_id, '被查看了')
+        # 访问量+1
+        t = Topic.objects.get(id=topic_id)
+        t.view_count += 1
+        t.save()
         topic = list(Topic.objects.filter(id=topic_id).
                      values('id', 'title', 'user__username', 'user__id', 'user__avatar', 'content', 'edit_time',
-                            'create_time', 'like_count', 'star_count', 'view_count', 'stars'))[0]
+                            'create_time', 'like_count', 'star_count', 'view_count', 'stars', 'is_homework'))[0]
         # 添加标签及头像
         label_dict_list = list(Topic.objects.filter(id=topic['id']).values('labels', 'labels__title'))
         topic['labels'] = label_dict_list
         topic['user__avatar'] = 'https://wmp.winng51.cn/static/' + str(topic['user__avatar'])
+        # 收藏数量只显示前十个
+        if topic['stars'] != {}:
+            topic['stars'] = topic['stars'][:10]
         # 添加照片
         image_list = []
         image_dict_list = list(Picture.objects.filter(topic=topic['id']).values('image'))

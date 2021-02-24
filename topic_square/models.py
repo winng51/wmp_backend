@@ -50,6 +50,7 @@ class User(models.Model):
 class Label(models.Model):
     title = models.CharField(max_length=30)
     create_time = models.DateTimeField(auto_now_add=True)
+    selectable = models.BooleanField(default=False, verbose_name="是否可被组员选择")
     user = models.ForeignKey(User, on_delete=models.PROTECT, default=None, blank=True, db_index=False)
 
     def __str__(self):

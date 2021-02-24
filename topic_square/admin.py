@@ -7,6 +7,7 @@ from datetime import date
 
 class LabelAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'create_time']
+    list_filter = ('selectable',)
 
 
 class PictureInline(admin.TabularInline):

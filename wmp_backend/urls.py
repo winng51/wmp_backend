@@ -28,4 +28,5 @@ urlpatterns = [
     path('mini-shop/goods', get_goods),
     path('topic-square/login', open_id_login),
     path('topic-square/identity', identity),
+    path('topic-square/authority', get_authority),
 ]

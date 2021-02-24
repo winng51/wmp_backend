@@ -74,14 +74,19 @@ def open_id_login(request):
 def identity(request):
     if request.method == 'POST':
         token = request.POST['token']
-        user_info = jwt_decode_handler(token)
-        print(user_info)
+        try:
+            user_info = jwt_decode_handler(token)
+        except ValueError:
+            print(token)
+            response = json.dumps(token, cls=DjangoJSONEncoder)
+            return HttpResponse(response, content_type="application/json")
+
         try:
             user = User.objects.get(id=user_info['user_id'])
         except User.DoesNotExist:
             response = json.dumps({'message': '未登录'}, cls=DjangoJSONEncoder)
             return HttpResponse(response, content_type="application/json", status_code=400)
-        print(request.POST)
+
         user.gender = request.POST['gender']
         user.avatar = get_image(request.POST['avatarUrl'], request.POST['username'])
         user.username = request.POST['username']
@@ -98,8 +103,15 @@ def identity(request):
             "gender": user.gender,
             "avatar": 'https://wmp.winng51.cn/static/' + str(user.avatar),
         }
-        print(response_data)
 
         response = json.dumps(response_data, cls=DjangoJSONEncoder)
         return HttpResponse(response, content_type="application/json")
 
+
+def get_authority(request):
+    if request.method == 'POST':
+        token = request.POST['token']
+        user_info = jwt_decode_handler(token)
+        user_authority = User.objects.get(id=user_info['user_id']).authority
+        response = json.dumps(user_authority, cls=DjangoJSONEncoder)
+        return HttpResponse(response, content_type="application/json")
