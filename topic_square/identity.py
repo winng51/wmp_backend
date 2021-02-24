@@ -22,8 +22,8 @@ def get_image(src, name):
 
 def open_id_login(request):
     if request.method == 'POST':
+        print(request.POST)
         code = request.POST['code']
-        print(request.POST['userName'])
         if not code:
             response = json.dumps({'message': '缺少code'}, cls=DjangoJSONEncoder)
             return HttpResponse(response, content_type="application/json", status_code=400)
@@ -46,11 +46,12 @@ def open_id_login(request):
             user = User.objects.get(openid=openid)
         except User.DoesNotExist:
             # 微信用户第一次登陆,新建用户
-            username = request.POST['username']
+            username = request.POST['userName']
             gender = request.POST['gender']
-            avatar = get_image(request.POST['avatar'], username)
+            avatar = get_image(request.POST['avatarUrl'], username)
             print(username, gender, avatar)
-            user = User.objects.create(username=username, gender=gender, avatar=avatar, openid=openid, authority=0)
+            user = User.objects.create(username=username, gender=gender, avatar=avatar, openid=openid,
+                                       college=None, authority=0)
 
         # 手动签发jwt
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -80,7 +81,7 @@ def identity(request):
             print(token)
             response = json.dumps(token, cls=DjangoJSONEncoder)
             return HttpResponse(response, content_type="application/json")
-
+        print(request.POST)
         try:
             user = User.objects.get(id=user_info['user_id'])
         except User.DoesNotExist:
@@ -88,8 +89,8 @@ def identity(request):
             return HttpResponse(response, content_type="application/json", status_code=400)
 
         user.gender = request.POST['gender']
-        user.avatar = get_image(request.POST['avatarUrl'], request.POST['username'])
-        user.username = request.POST['username']
+        user.avatar = get_image(request.POST['avatarUrl'], request.POST['userName'])
+        user.username = request.POST['userName']
         user.name = request.POST['name']
         user.college = request.POST['college']
         user.grade = request.POST['grade']

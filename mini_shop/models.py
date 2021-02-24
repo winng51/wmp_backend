@@ -10,6 +10,10 @@ class Tag(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name = "分类"
+        verbose_name_plural = "分类"
+
 
 class Good(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, default=None, null=True, blank=True, db_index=False,
@@ -25,6 +29,10 @@ class Good(models.Model):
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        verbose_name = "产品"
+        verbose_name_plural = "文创产品"
 
 
 class ImageLabel(models.Model):

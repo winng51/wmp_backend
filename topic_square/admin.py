@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+
 from .models import Label, Topic, Picture, Comment, SubComment, User
 
 # Register your models here.
@@ -6,8 +9,9 @@ from datetime import date
 
 
 class LabelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'create_time']
-    list_filter = ('selectable',)
+    list_display = ['id', 'title', 'create_time', 'visible']
+    list_filter = ('selectable', 'visible')
+    list_editable = ('visible',)
 
 
 class PictureInline(admin.TabularInline):
@@ -26,12 +30,19 @@ authority_check.short_description = "身份认证 - 成员确认"
 
 
 class UserAdmin(admin.ModelAdmin):
-    readonly_fields = ('openid',)
-    list_display = ['id', 'username', 'name', 'student_info', 'authority', 'identity']
+    def preview(self, obj):
+        # 返回方法2
+        return format_html('<img src="/static/%s" height="32" />' % obj.avatar.url)
+
+    preview.allow_tags = True
+    preview.short_description = "头像"
+
+    readonly_fields = ('openid', 'preview')
+    list_display = ['id', 'preview', 'username', 'name', 'student_info', 'authority', 'identity']
     list_filter = ('grade', 'college', 'identity', 'authority', 'gender')
     fieldsets = (
         ['基本信息', {
-            'fields': ('username', 'openid', 'avatar', 'gender')}],
+            'fields': ('username', 'openid', 'preview', 'gender')}],
         ['身份验证', {
             'fields': ('identity', 'authority')}],
         ['学生信息', {
