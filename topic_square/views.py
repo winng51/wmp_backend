@@ -6,6 +6,17 @@ import json
 from .models import Label, Topic, Picture, Comment, SubComment, User
 
 
+def get_add_labels(request):
+    if request.method == 'GET':
+        label_dict = {}
+        label_list = list(Label.objects.filter(visible=True, selectable=True).values('id', 'title'))
+        for label in label_list:
+            label['select'] = False
+            label_dict[label['id']] = label
+        response = json.dumps(label_dict, cls=DjangoJSONEncoder)
+        return HttpResponse(response, content_type="application/json")
+
+
 def get_labels(request):
     if request.method == 'GET':
         all_topic_list = []
@@ -15,7 +26,9 @@ def get_labels(request):
         label_list = list(Label.objects.filter(visible=True).values('id', 'title'))
         for label in label_list:
             topic_list = []
-            topics = list(Topic.objects.filter(labels__in=[label['id']]).values('id').order_by('-edit_time'))
+            topics = list(Topic.objects.filter(labels__in=[label['id']]).values('id').order_by('-is_homework', '-edit_time'))
+            if len(topics) == 0:
+                continue
             for key in topics:
                 topic_list.append(key['id'])
             label['topic_list'] = topic_list

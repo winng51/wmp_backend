@@ -22,6 +22,7 @@ from mini_shop.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('topic-square/labels', get_labels),
+    path('topic-square/add', get_add_labels),
     path('topic-square/homework', get_homework_list),
     path('topic-square/topics', get_topics),
     path('topic-square/topic', get_topic),
