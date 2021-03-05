@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from topic_square.views import *
 from topic_square.identity import *
+from topic_square.publish import *
 from mini_shop.views import *
 
 urlpatterns = [
@@ -30,4 +31,7 @@ urlpatterns = [
     path('topic-square/login', open_id_login),
     path('topic-square/identity', identity),
     path('topic-square/authority', get_authority),
+    path('topic-square/comment', pub_comment),
+    path('topic-square/delete', delete),
+    path('topic-square/report', report),
 ]

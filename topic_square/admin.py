@@ -37,7 +37,7 @@ class UserAdmin(admin.ModelAdmin):
     preview.allow_tags = True
     preview.short_description = "头像"
 
-    readonly_fields = ('openid', 'preview')
+    readonly_fields = ('openid', 'preview', 'stars')
     list_display = ['id', 'preview', 'username', 'name', 'student_info', 'authority', 'identity']
     list_filter = ('grade', 'college', 'identity', 'authority', 'gender')
     fieldsets = (
@@ -46,7 +46,9 @@ class UserAdmin(admin.ModelAdmin):
         ['身份验证', {
             'fields': ('identity', 'authority')}],
         ['学生信息', {
-            'fields': ('college', 'grade', 'classes', 'name', 'phone')}]
+            'fields': ('college', 'grade', 'classes', 'name', 'phone')}],
+        ['论坛统计', {
+            'fields': ('stars',)}]
     )
     ordering = ['-identity']
     actions = [authority_check]

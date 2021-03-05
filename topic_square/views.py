@@ -112,7 +112,11 @@ def get_topic(request):
         topic['user__avatar'] = 'https://wmp.winng51.cn/static/' + str(topic['user__avatar'])
         # 收藏数量只显示前十个
         if topic['stars'] != {}:
-            topic['stars'] = topic['stars'][:10]
+            new_list = []
+            star_list = list(topic['stars'].items())[:10]
+            for star_user in star_list:
+                new_list.append({"avatar": star_user[1], "user_id": star_user[0]})
+            topic['stars'] = new_list
         # 添加照片
         image_list = []
         image_dict_list = list(Picture.objects.filter(topic=topic['id']).values('image'))
